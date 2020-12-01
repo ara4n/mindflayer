@@ -3,6 +3,11 @@
 use strict;
 use warnings;
 
+use Parallel::Forker;
+my $Fork = new Parallel::Forker (use_sig_child=>1, max_proc=>15);
+$SIG{CHLD} = sub { Parallel::Forker::sig_child($Fork); };
+$SIG{TERM} = sub { $Fork->kill_tree_all('TERM') if $Fork && $Fork->in_parent; die "Quitting...\n"; };
+
 use Net::CIDR::Lite;
 use MaxMind::DB::Reader;
 use Time::Moment;
@@ -99,6 +104,10 @@ foreach my $day (sort keys %$timeline) {
     }
     close(FILE);
     if ($lines > 1) {
-        system("Rscript matrix-timeline.R $day");
+        $Fork->schedule(
+            run_on_start => sub { system("Rscript matrix-timeline.R $day"); }
+        )->ready;
     }
 }
+
+$Fork->wait_all;
