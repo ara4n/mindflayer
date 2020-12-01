@@ -66,7 +66,8 @@ for(i in c(1:nrow(summary))){
 p <- ggplot() +
   annotation_custom(earth, xmin = -180, xmax = 180, ymin = -90, ymax = 90) +
   geom_line(data=data_ready_plot, aes(x=lon, y=lat, group=group, colour=weight, alpha=weight), size=0.6) +
-  scale_color_distiller(palette="YlOrRd") + # Options are YlOrRd or PuBuGn 
+  scale_color_distiller(palette="YlOrRd", limits=c(0, 80000)) + # Options are YlOrRd or PuBuGn 
+  scale_alpha_continuous(limits=c(0, 1000)) +
   theme_void() +
   theme(
         legend.position="none",
